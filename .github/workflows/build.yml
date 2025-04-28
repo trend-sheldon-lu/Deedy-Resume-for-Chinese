@@ -12,39 +12,29 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v4
 
-      - name: Install TeX Live
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends texlive-full fontconfig
-
-      - name: Configure Font Substitution (Helvetica Neue -> TeX Gyre Heros)
-        run: |
-          # Create fontconfig configuration directory if it doesn't exist
-          mkdir -p ~/.config/fontconfig
-          # Create local.conf for font substitution
-          cat << EOF > ~/.config/fontconfig/local.conf
-          <?xml version='1.0'?>
-          <!DOCTYPE fontconfig SYSTEM 'fonts.dtd'>
-          <fontconfig>
-            <match target="pattern">
-              <test qual="any" name="family"><string>Helvetica Neue</string></test>
-              <edit name="family" mode="assign" binding="same"><string>TeX Gyre Heros</string></edit>
-            </match>
-            <match target="pattern">
-              <test qual="any" name="family"><string>Helvetica Neue Light</string></test>
-              <edit name="family" mode="assign" binding="same"><string>TeX Gyre Heros</string></edit>
-            </match>
-            <!-- Add more substitutions if needed -->
-          </fontconfig>
-          EOF
-          # Update font cache
-          fc-cache -fv
-
       - name: Create output directory
         run: mkdir -p docs
 
-      - name: Build Resume PDFs
-        run: bash scripts/build.sh
+      - name: Compile Chinese Resume
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: resume.tex
+          working_directory: OpenFonts.Chinese
+          latexmk_use_xelatex: true
+          extra_system_packages: "fonts-wqy-microhei fonts-wqy-zenhei fonts-noto-cjk"
+
+      - name: Move Chinese Resume to docs
+        run: mv OpenFonts.Chinese/resume.pdf docs/resume-cn.pdf
+
+      - name: Compile English Resume
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: resume.tex
+          working_directory: OpenFonts
+          latexmk_use_xelatex: true
+
+      - name: Move English Resume to docs
+        run: mv OpenFonts/resume.pdf docs/resume.pdf
 
       - name: Upload PDF Artifacts
         uses: actions/upload-artifact@v4
