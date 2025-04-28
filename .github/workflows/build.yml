@@ -12,12 +12,31 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v4
 
-      - name: Install TeX Live
+      - name: Cache TeX Live and fonts
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            /usr/share/texlive
+            /usr/share/fonts
+            /var/cache/apt
+            ~/.cache/fontconfig
+          key: texlive-fonts-${{ hashFiles('.github/workflows/build.yml') }}
+          restore-keys: |
+            texlive-fonts-
+
+      - name: Install TeX Live and fonts
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends texlive-full fontconfig
+          sudo apt-get install -y --no-install-recommends \
+            texlive-full \
+            fontconfig \
+            fonts-noto-cjk \
+            fonts-wqy-microhei \
+            fonts-wqy-zenhei
 
-      - name: Configure Font Substitution (Helvetica Neue -> TeX Gyre Heros)
+      - name: Configure Font Substitution
         run: |
           # Create fontconfig configuration directory if it doesn't exist
           mkdir -p ~/.config/fontconfig
@@ -26,6 +45,7 @@ jobs:
           <?xml version='1.0'?>
           <!DOCTYPE fontconfig SYSTEM 'fonts.dtd'>
           <fontconfig>
+            <!-- English Font Substitution -->
             <match target="pattern">
               <test qual="any" name="family"><string>Helvetica Neue</string></test>
               <edit name="family" mode="assign" binding="same"><string>TeX Gyre Heros</string></edit>
