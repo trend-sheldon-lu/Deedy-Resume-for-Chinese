@@ -12,12 +12,17 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v4
 
-      - name: Install TeX Live
+      - name: Install TeX Live and fonts
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends texlive-full fontconfig
+          sudo apt-get install -y --no-install-recommends \
+            texlive-full \
+            fontconfig \
+            fonts-noto-cjk \
+            fonts-wqy-microhei \
+            fonts-wqy-zenhei
 
-      - name: Configure Font Substitution (Helvetica Neue -> TeX Gyre Heros)
+      - name: Configure Font Substitution
         run: |
           # Create fontconfig configuration directory if it doesn't exist
           mkdir -p ~/.config/fontconfig
@@ -26,6 +31,7 @@ jobs:
           <?xml version='1.0'?>
           <!DOCTYPE fontconfig SYSTEM 'fonts.dtd'>
           <fontconfig>
+            <!-- English Font Substitution -->
             <match target="pattern">
               <test qual="any" name="family"><string>Helvetica Neue</string></test>
               <edit name="family" mode="assign" binding="same"><string>TeX Gyre Heros</string></edit>
@@ -46,10 +52,14 @@ jobs:
       - name: Build Resume PDFs
         run: bash scripts/build.sh
 
-      - name: Upload PDF Artifacts
+      - name: Upload English Resume PDF
         uses: actions/upload-artifact@v4
         with:
-          name: Resume-PDFs
-          path: |
-            docs/resume.pdf
-            docs/resume-cn.pdf 
+          name: Resume-EN
+          path: docs/resume.pdf
+          
+      - name: Upload Chinese Resume PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: Resume-CN
+          path: docs/resume-cn.pdf 
