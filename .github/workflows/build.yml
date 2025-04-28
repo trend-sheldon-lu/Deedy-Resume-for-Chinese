@@ -12,7 +12,21 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v4
 
+      - name: Cache TeX Live and fonts
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            /usr/share/texlive
+            /usr/share/fonts
+            /var/cache/apt
+            ~/.cache/fontconfig
+          key: texlive-fonts-${{ hashFiles('.github/workflows/build.yml') }}
+          restore-keys: |
+            texlive-fonts-
+
       - name: Install TeX Live and fonts
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
