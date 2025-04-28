@@ -21,7 +21,7 @@ jobs:
           root_file: resume.tex
           working_directory: OpenFonts.Chinese
           latexmk_use_xelatex: true
-          extra_system_packages: "texlive-fonts-extra"
+          extra_system_packages: "texlive-full"
 
       - name: Move Chinese Resume to docs
         run: mv OpenFonts.Chinese/resume.pdf docs/resume-cn.pdf
