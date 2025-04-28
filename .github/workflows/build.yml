@@ -8,6 +8,10 @@ on:
 jobs:
   build_latex:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
@@ -66,14 +70,38 @@ jobs:
       - name: Build Resume PDFs
         run: bash scripts/build.sh
 
-      - name: Upload English Resume PDF
+      # Keep the artifact uploads for CI/CD purposes
+      - name: Upload English Resume PDF as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Resume-EN
           path: docs/resume.pdf
           
-      - name: Upload Chinese Resume PDF
+      - name: Upload Chinese Resume PDF as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Resume-CN
-          path: docs/resume-cn.pdf 
+          path: docs/resume-cn.pdf
+          
+      # Setup GitHub Pages
+      - name: Setup GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v3
+        
+      # Upload to GitHub Pages
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: docs
+          
+      # Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+        
+      # Add direct links to the PDFs in the job summary  
+      - name: Add PDF links to job summary
+        run: |
+          echo "### 📄 Resume PDFs" >> $GITHUB_STEP_SUMMARY
+          echo "* [English Resume](https://${{ github.repository_owner }}.github.io/$(echo ${{ github.repository }} | cut -d'/' -f2)/resume.pdf)" >> $GITHUB_STEP_SUMMARY
+          echo "* [Chinese Resume](https://${{ github.repository_owner }}.github.io/$(echo ${{ github.repository }} | cut -d'/' -f2)/resume-cn.pdf)" >> $GITHUB_STEP_SUMMARY 
