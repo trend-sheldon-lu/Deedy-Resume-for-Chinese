@@ -66,14 +66,10 @@ jobs:
       - name: Build Resume PDFs
         run: bash scripts/build.sh
 
-      - name: Upload English Resume PDF
+      - name: Upload PDF Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Resume-EN
-          path: docs/resume.pdf
-          
-      - name: Upload Chinese Resume PDF
-        uses: actions/upload-artifact@v4
-        with:
-          name: Resume-CN
-          path: docs/resume-cn.pdf 
+          name: Resume-PDFs
+          path: |
+            docs/resume.pdf
+            docs/resume-cn.pdf 
